@@ -1,0 +1,32 @@
+{
+  "name": "profspilka-vercel",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Чернівецька міська організація Профспілки працівників освіти і науки України",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "cd news-frontend && npm install && npm run build",
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.4.1",
+    "@vercel/blob": "^0.27.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.13.4",
+    "@vercel/node": "^5.6.3",
+    "prisma": "^6.4.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.2"
+  }
+}
