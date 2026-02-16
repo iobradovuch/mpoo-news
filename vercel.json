@@ -8,6 +8,8 @@
     { "source": "/api/documents/all", "destination": "/api/documents?all=true" },
     { "source": "/api/upload/image", "destination": "/api/upload?type=image" },
     { "source": "/api/upload/document", "destination": "/api/upload?type=document" },
+    { "source": "/api/news-import/scrape", "destination": "/api/news-import?action=scrape" },
+    { "source": "/api/news-import/import-selected", "destination": "/api/news-import?action=import" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [
