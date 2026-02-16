@@ -256,6 +256,9 @@ function htmlToMarkdown($: cheerio.CheerioAPI, $container: cheerio.Cheerio<any>)
   // Remove ALL image references from markdown (they are already in imageUrls)
   markdown = markdown.replace(/!\[.*?\]\(.*?\)\s*/g, '');
 
+  // Remove empty links [](url) — left from <a><img/></a> wrappers
+  markdown = markdown.replace(/\[\s*\]\(.*?\)\s*/g, '');
+
   // Normalize blank lines
   markdown = markdown.replace(/\n{3,}/g, '\n\n').trim();
 
@@ -273,12 +276,16 @@ function processInline($: cheerio.CheerioAPI, $el: cheerio.Cheerio<any>): string
       const tag = (node as any).tagName?.toLowerCase() || '';
 
       if (tag === 'a') {
-        let href = $node.attr('href') || '';
-        if (href && !href.startsWith('http')) {
-          href = 'https://pon.org.ua' + (href.startsWith('/') ? '' : '/') + href;
-        }
         const text = $node.text().trim();
-        result += `[${text}](${href})`;
+        if (!text) {
+          // Skip empty links (e.g. <a><img/></a> — image already in imageUrls)
+        } else {
+          let href = $node.attr('href') || '';
+          if (href && !href.startsWith('http')) {
+            href = 'https://pon.org.ua' + (href.startsWith('/') ? '' : '/') + href;
+          }
+          result += `[${text}](${href})`;
+        }
       } else if (tag === 'strong' || tag === 'b') {
         result += `**${$node.text().trim()}**`;
       } else if (tag === 'em' || tag === 'i') {
