@@ -144,17 +144,13 @@ class ApiService {
     return data;
   }
 
-  async createTeamMember(formData: FormData): Promise<TeamMember> {
-    const { data } = await this.api.post<TeamMember>('/team', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  async createTeamMember(member: Record<string, unknown>): Promise<TeamMember> {
+    const { data } = await this.api.post<TeamMember>('/team', member);
     return data;
   }
 
-  async updateTeamMember(id: number, formData: FormData): Promise<TeamMember> {
-    const { data } = await this.api.put<TeamMember>(`/team/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+  async updateTeamMember(id: number, member: Record<string, unknown>): Promise<TeamMember> {
+    const { data } = await this.api.put<TeamMember>(`/team/${id}`, member);
     return data;
   }
 
