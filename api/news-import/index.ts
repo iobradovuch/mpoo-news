@@ -46,6 +46,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 async function handleScrape(_req: VercelRequest, res: VercelResponse) {
   try {
+    // If a specific URL is provided, parse just that article
+    const testUrl = _req.query.url as string | undefined;
+    if (testUrl) {
+      const article = await fetchArticle(testUrl);
+      if (article) {
+        return res.status(200).json([article]);
+      }
+      return res.status(404).json({ error: 'Could not parse article' });
+    }
+
     // Fetch news list page
     const response = await fetch(SOURCE_URL, {
       headers: { 'User-Agent': USER_AGENT },
