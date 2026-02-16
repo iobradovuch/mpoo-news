@@ -7,7 +7,7 @@ import type { Prisma } from '@prisma/client';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handleCors(req, res)) return;
 
-  const pathSegments = Array.isArray(req.query.path) ? req.query.path : [req.query.path];
+  const pathSegments = Array.isArray(req.query.path) ? req.query.path : req.query.path ? [req.query.path] : [];
   const idOrAction = pathSegments[0];
 
   try {

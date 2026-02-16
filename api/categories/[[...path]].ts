@@ -6,7 +6,7 @@ import { handleCors } from '../_lib/cors';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handleCors(req, res)) return;
 
-  const pathSegments = Array.isArray(req.query.path) ? req.query.path : [req.query.path];
+  const pathSegments = Array.isArray(req.query.path) ? req.query.path : req.query.path ? [req.query.path] : [];
   const idStr = pathSegments[0];
 
   try {
