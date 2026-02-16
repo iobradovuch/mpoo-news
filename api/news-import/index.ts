@@ -167,30 +167,46 @@ async function fetchArticle(url: string, previewImage?: string): Promise<Externa
   let mainImage = previewImage;
   const $fullstory = $('.fullstory, .full-story, .post-content, .entry-content, article');
   if (!mainImage) {
-    const firstImg = $fullstory.find('img').first();
-    let imgSrc = firstImg.attr('src') || '';
+    // Try highslide link first (full-res), then fall back to img src (thumbnail)
+    const firstHighslide = $fullstory.find('a.highslide').first();
+    let imgSrc = firstHighslide.attr('href') || '';
+    if (!imgSrc) {
+      imgSrc = $fullstory.find('img').first().attr('src') || '';
+    }
     if (imgSrc && !imgSrc.startsWith('http')) {
       imgSrc = 'https://pon.org.ua' + (imgSrc.startsWith('/') ? '' : '/') + imgSrc;
     }
     if (imgSrc) mainImage = imgSrc;
   }
 
-  // Extract gallery images
+  // Extract gallery images from fullstory and fotorama gallery
   const imageUrls: string[] = [];
-  $fullstory.find('img').each((_i, el) => {
-    let src = $(el).attr('src') || '';
+  const addImage = (src: string) => {
     if (!src) return;
     if (!src.startsWith('http')) {
       src = 'https://pon.org.ua' + (src.startsWith('/') ? '' : '/') + src;
     }
-    // Skip small images and duplicates
+    if (src === mainImage || imageUrls.includes(src)) return;
+    imageUrls.push(src);
+  };
+
+  // Images inside fullstory
+  $fullstory.find('img').each((_i, el) => {
+    const src = $(el).attr('src') || '';
     const width = parseInt($(el).attr('width') || '100');
     const height = parseInt($(el).attr('height') || '100');
     if (width < 50 || height < 50) return;
-    if (src === mainImage) return;
-    if (!imageUrls.includes(src)) {
-      imageUrls.push(src);
-    }
+    addImage(src);
+  });
+
+  // Images from .fotorama gallery (placed after fullstory on pon.org.ua)
+  $('.fotorama img').each((_i, el) => {
+    addImage($(el).attr('src') || '');
+  });
+
+  // Also check highslide links for full-res images
+  $fullstory.find('a.highslide').each((_i, el) => {
+    addImage($(el).attr('href') || '');
   });
 
   // Extract content as markdown
