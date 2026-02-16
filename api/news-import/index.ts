@@ -193,7 +193,7 @@ async function fetchArticle(url: string, previewImage?: string): Promise<Externa
     }
   });
 
-  // Extract content and convert to markdown
+  // Extract content as markdown
   const content = htmlToMarkdown($, $fullstory);
 
   return {
@@ -236,7 +236,7 @@ function htmlToMarkdown($: cheerio.CheerioAPI, $container: cheerio.Cheerio<any>)
         markdown += '> ' + text.replace(/\n/g, '\n> ') + '\n\n';
       }
     } else if (tagName === 'img') {
-      // Skip standalone images (already extracted)
+      // Skip standalone images (already extracted to imageUrls)
     } else if (tagName === 'div' || tagName === 'section') {
       // Recurse into divs
       const inner = htmlToMarkdown($, $el);
@@ -253,8 +253,8 @@ function htmlToMarkdown($: cheerio.CheerioAPI, $container: cheerio.Cheerio<any>)
     }
   });
 
-  // Remove first image reference (it's the main image)
-  markdown = markdown.replace(/!\[.*?\]\(.*?\)\n*/, '');
+  // Remove ALL image references from markdown (they are already in imageUrls)
+  markdown = markdown.replace(/!\[.*?\]\(.*?\)\s*/g, '');
 
   // Normalize blank lines
   markdown = markdown.replace(/\n{3,}/g, '\n\n').trim();
