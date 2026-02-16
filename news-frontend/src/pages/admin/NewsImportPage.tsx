@@ -3,6 +3,20 @@ import { Download, ArrowRight, Check, CheckSquare, Square, Search, Loader2 } fro
 import apiService from '../../services/api';
 import type { ExternalNews } from '../../types';
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/!\[.*?\]\(.*?\)/g, '')       // images ![alt](url)
+    .replace(/\[([^\]]*)\]\(.*?\)/g, '$1') // links [text](url) → text
+    .replace(/#{1,6}\s/g, '')              // headers
+    .replace(/\*\*(.+?)\*\*/g, '$1')      // bold
+    .replace(/\*(.+?)\*/g, '$1')          // italic
+    .replace(/^\s*[-*]\s/gm, '')           // list markers
+    .replace(/^\s*\d+\.\s/gm, '')         // numbered lists
+    .replace(/>\s?/g, '')                  // blockquotes
+    .replace(/\n{2,}/g, ' ')              // collapse newlines
+    .trim();
+}
+
 export default function NewsImportPage() {
   const [news, setNews] = useState<ExternalNews[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -193,7 +207,7 @@ export default function NewsImportPage() {
                         {n.title}
                       </h3>
                       <p className="text-sm text-gray-500 line-clamp-2 mb-2">
-                        {n.content?.substring(0, 200)}...
+                        {n.content ? stripMarkdown(n.content).substring(0, 200) + '...' : ''}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-gray-400">
                         {n.publishedDate && (
