@@ -8,6 +8,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
+      // Check if this is /documents/all (rewritten with ?all=true)
+      const url = req.url || '';
+      if (url.includes('/all') || req.query.all === 'true') {
+        const documents = await prisma.document.findMany({ orderBy: { createdAt: 'desc' } });
+        return res.status(200).json(documents);
+      }
+
+      // Paginated list
       const page = parseInt(req.query.page as string) || 0;
       const size = parseInt(req.query.size as string) || 20;
       const sortBy = (req.query.sortBy as string) || 'createdAt';

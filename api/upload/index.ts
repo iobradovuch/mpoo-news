@@ -3,19 +3,6 @@ import { put } from '@vercel/blob';
 import { requireAdmin } from '../_lib/auth';
 import { handleCors } from '../_lib/cors';
 
-const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-];
-
-const ALLOWED_DOCUMENT_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/plain',
-];
-
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export const config = {
@@ -27,26 +14,21 @@ export const config = {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handleCors(req, res)) return;
 
-  const pathSegments = Array.isArray(req.query.path) ? req.query.path : req.query.path ? [req.query.path] : [];
-  const action = pathSegments[0];
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Determine upload type from URL
+  const url = req.url || '';
+  let folder = 'files';
+  if (url.includes('/image') || url.includes('type=image')) {
+    folder = 'images';
+  } else if (url.includes('/document') || url.includes('type=document')) {
+    folder = 'documents';
+  }
 
   try {
-    if (action === 'image' && req.method === 'POST') {
-      return handleUpload(req, res, 'images', ALLOWED_IMAGE_TYPES, 'image/jpeg');
-    }
-
-    if (action === 'document' && req.method === 'POST') {
-      return handleUpload(req, res, 'documents', ALLOWED_DOCUMENT_TYPES, 'application/octet-stream');
-    }
-
-    // Legacy /api/upload/files/* endpoint
-    if (action === 'files') {
-      return res.status(404).json({
-        error: 'File not found. Files are now served from Vercel Blob storage. Use the URL returned from the upload API.',
-      });
-    }
-
-    return res.status(404).json({ error: 'Not found' });
+    return handleUpload(req, res, folder);
   } catch (error) {
     console.error('Upload API error:', error);
     return res.status(500).json({ url: null, message: 'Помилка завантаження файлу' });
@@ -56,9 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function handleUpload(
   req: VercelRequest,
   res: VercelResponse,
-  folder: string,
-  _allowedTypes: string[],
-  defaultContentType: string
+  folder: string
 ) {
   const user = requireAdmin(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
@@ -79,7 +59,7 @@ async function handleUpload(
   }
 
   // Extract file from multipart if needed
-  let fileBuffer: Buffer<ArrayBuffer> = body as Buffer<ArrayBuffer>;
+  let fileBuffer: Buffer = body;
   let actualFilename = filename;
   let fileContentType = fileType;
 
@@ -88,7 +68,7 @@ async function handleUpload(
     if (boundary) {
       const parsed = parseMultipart(body, boundary);
       if (parsed) {
-        fileBuffer = parsed.buffer as Buffer<ArrayBuffer>;
+        fileBuffer = parsed.buffer;
         actualFilename = parsed.filename || filename;
         fileContentType = parsed.contentType || fileType;
       }
@@ -98,7 +78,7 @@ async function handleUpload(
   // Upload to Vercel Blob
   const blob = await put(`${folder}/${Date.now()}-${actualFilename}`, fileBuffer, {
     access: 'public',
-    contentType: fileContentType || defaultContentType,
+    contentType: fileContentType || 'application/octet-stream',
   });
 
   return res.status(200).json({

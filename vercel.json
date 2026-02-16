@@ -4,13 +4,10 @@
   "installCommand": "npm install && cd news-frontend && npm install",
   "framework": null,
   "rewrites": [
-    { "source": "/api/auth/:path*", "destination": "/api/auth/:path*" },
-    { "source": "/api/news/:path*", "destination": "/api/news/:path*" },
-    { "source": "/api/categories/:path*", "destination": "/api/categories/:path*" },
-    { "source": "/api/documents/:path*", "destination": "/api/documents/:path*" },
-    { "source": "/api/pages/:path*", "destination": "/api/pages/:path*" },
-    { "source": "/api/team/:path*", "destination": "/api/team/:path*" },
-    { "source": "/api/upload/:path*", "destination": "/api/upload/:path*" },
+    { "source": "/api/auth/logout", "destination": "/api/auth/login" },
+    { "source": "/api/documents/all", "destination": "/api/documents?all=true" },
+    { "source": "/api/upload/image", "destination": "/api/upload?type=image" },
+    { "source": "/api/upload/document", "destination": "/api/upload?type=document" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [
